@@ -1,0 +1,85 @@
+;; =========================================================
+;; Kanata TEST config
+;; Purpose: verify kanata works, and test 5 features one by one:
+;;   1) tap-hold
+;;   2) layer-while-held
+;;   3) one-shot
+;;   4) tap-dance
+;;   5) chords (defchordsv2)
+;; caps-word is intentionally NOT included, as requested.
+;;
+;; Only the keys listed in defsrc below are touched by kanata.
+;; Every other key on your keyboard behaves 100% normally.
+;; =========================================================
+
+(defcfg
+  ;; Only process the keys we explicitly list in defsrc.
+  ;; Keeps this test safe and easy to reason about.
+  process-unmapped-keys no
+
+  ;; Required whenever defchordsv2 is used together with tap-hold actions.
+  ;; Allows chord detection and tap-hold decisions to run concurrently.
+  concurrent-tap-hold true
+)
+
+;; -----------------------------------------------------------------
+;; defsrc: the physical keys kanata will intercept.
+;; We only grab: a s d f j k l ;
+;; -----------------------------------------------------------------
+(defsrc
+  a    s    d    f    j    k    l    ;
+)
+
+;; -----------------------------------------------------------------
+;; defalias: named actions we reuse in the layer below.
+;; -----------------------------------------------------------------
+(defalias
+  ;; 1) TAP-HOLD
+  ;; tap "a" quickly  -> outputs "a"
+  ;; hold "a"         -> acts as Left Control
+  a-th (tap-hold 200 200 a lctl)
+
+  ;; 2) LAYER-WHILE-HELD
+  ;; hold "s" -> temporarily activates the "numbers" layer
+  ;; (see deflayer numbers below: d->2, f->3 while s is held)
+  s-lyr (layer-while-held numbers)
+
+  ;; 3) ONE-SHOT
+  ;; tap "j" once -> Left Shift applies to just the NEXT key you press
+  j-os (one-shot 1000 lsft)
+
+  ;; 4) TAP-DANCE
+  ;; 1 tap  -> "k"
+  ;; 2 taps -> Ctrl+C
+  ;; 3 taps -> Escape
+  k-td (tap-dance 200 (k C-c esc))
+)
+
+;; -----------------------------------------------------------------
+;; defchordsv2: press two keys together (within timeout) to fire
+;; a combined action instead of each key individually.
+;; 5) CHORDS
+;; Pressing "l" and ";" together -> outputs "!"
+;; -----------------------------------------------------------------
+(defchordsv2
+  (l ;) S-1 200 all-released ()
+)
+
+;; -----------------------------------------------------------------
+;; deflayer: base layer. Order of actions matches defsrc order:
+;; a     s      d    f    j     k     l    ;
+;; -----------------------------------------------------------------
+(deflayer base
+  @a-th  @s-lyr d    f    @j-os @k-td l    ;
+)
+
+;; -----------------------------------------------------------------
+;; deflayer: numbers layer, only active while "s" (mapped to @s-lyr)
+;; is held down. While held:
+;;   d -> 2
+;;   f -> 3
+;; Everything else on this layer falls through to base ("_").
+;; -----------------------------------------------------------------
+(deflayer numbers
+  _      _      2    3    _     _     _    _
+)
