@@ -105,5 +105,11 @@
 ;; to base layer, so normal typing still works while mouse-mode is on.
 ;; -----------------------------------------------------------------
 (deflayer mouse
-  _ @ms-mid @ms-right @ms-left _ _ _ _ _ _ _ _ _ @ms-scroll-left @ms-scroll-down @ms-scroll-up _ _ _ _ _ _ _ @mouse-exit @ms-cursor-up @ms-cursor-down @ms-cursor-left @ms-cursor-right pgup pgdn
+  ;; defsrc order:
+  ;; a  s  d  f  l  spc lsft f3 ;  n  ret .  caps h  j  k  u  p  m  rsft lctl i  o  ,  8  2  4  6  e  w
+  _  @ms-mid @ms-right @ms-left @ms-cursor-right _ _ _ _ _ _ _ _
+  @ms-cursor-left @ms-cursor-down @ms-cursor-up
+  @ms-scroll-up @ms-scroll-right _ _ _
+  @ms-scroll-down @ms-scroll-left @mouse-exit
+  _ _ _ _ pgup pgdn
 )

@@ -1,0 +1,92 @@
+;; =========================================================
+;; Kanata PRODUCTION config
+;; =========================================================
+
+(defcfg
+  ;; Only the keys listed in defsrc are intercepted by kanata.
+  ;; Everything else on the keyboard behaves 100% normally.
+  process-unmapped-keys no
+)
+
+;; -----------------------------------------------------------------
+;; defsrc: every physical key kanata will watch/remap
+;; -----------------------------------------------------------------
+(defsrc
+  a    s    d    f    l    spc  lsft f3   ;    n    ret  .    caps h    j    k    u    p    m    rsft lctl i    o
+)
+
+;; -----------------------------------------------------------------
+;; defalias: reusable named actions
+;; -----------------------------------------------------------------
+(defalias
+  ;; ---- Home row / dual-purpose mods ----
+  ;; tap-hold-press = resolve hold INSTANTLY as soon as another key
+  ;; is pressed, instead of waiting out the full timeout.
+  a-th    (tap-hold-press 200 200 a    lctl)
+  s-th    (tap-hold-press 200 200 s    lmet)
+  d-th    (tap-hold-press 200 200 d    lsft)
+  f-th    (tap-hold-press 200 200 f    lalt)
+  l-th    (tap-hold-press 200 200 l    lsft)
+  spc-th  (tap-hold-press 200 200 spc  lalt)
+  n-th    (tap-hold-press 200 200 ret  lmet)
+
+  ;; ---- Left Shift: tap = F4, hold = normal Shift ----
+  lsft-th (tap-hold-press 200 200 f4   lsft)
+
+  ;; ---- Right Shift: tap = Backspace, hold = normal Shift ----
+  rsft-th (tap-hold-press 200 200 bspc rsft)
+
+  ;; ---- Semicolon: tap = f3, hold = Ctrl ----
+  semi-th (tap-hold-press 200 200 f3   lctl)
+
+  ;; ---- Left Ctrl: tap = F8, hold = normal Ctrl ----
+  lctl-th (tap-hold-press 200 200 f8   lctl)
+
+  ;; ---- Capslock ----
+  ;; Holding caps: keeps lctl held AND activates the nav layer below,
+  ;; so any key you press while caps is held acts as Ctrl+<key>,
+  ;; except the keys overridden in the nav layer.
+  capsmod (multi lctl (layer-while-held capsnav))
+  caps-th (tap-hold-press 200 200 esc @capsmod)
+
+  ;; ---- Capslock nav-layer overrides ----
+  ;; unmod releases the held Ctrl just for this one key output,
+  ;; then Ctrl automatically re-engages afterward.
+  nav-left    (unmod left)
+  nav-down    (unmod down)
+  nav-up      (unmod up)
+  nav-right   (unmod rght)
+  nav-f12     (unmod f12)
+  nav-space   (unmod spc)
+
+  ;; unicode bypasses modifier state entirely, so held Ctrl
+  ;; doesn't interfere with these symbol outputs.
+  nav-colon   (unicode :)
+  nav-dollar  (unicode $)
+  nav-at      (unicode @)
+
+  ;; caps + ; -> Ctrl+Shift+V
+  ;; Ctrl is already held (from @capsmod), so we only need to add
+  ;; Shift+V here; combined with the held Ctrl this outputs Ctrl+Shift+V.
+  nav-pastesp S-v
+)
+
+;; -----------------------------------------------------------------
+;; deflayer: base layer (always active unless caps is held)
+;; Order matches defsrc exactly:
+;; a s d f l spc lsft f3 ; n ret . caps h j k u p m rsft lctl i o
+;; -----------------------------------------------------------------
+(deflayer base
+  @a-th @s-th @d-th @f-th @l-th @spc-th @lsft-th ; @semi-th @n-th . n @caps-th h j k u p m @rsft-th @lctl-th i o
+)
+
+;; -----------------------------------------------------------------
+;; deflayer: capsnav (active only while capslock is held)
+;; Everything transparent (_) falls through to base, so it still
+;; behaves as Ctrl+<key> because Ctrl is separately held via @capsmod.
+;; Only specific keys are overridden here.
+;; -----------------------------------------------------------------
+(deflayer capsnav
+  _     _     _     _     @nav-right _   _    _  @nav-pastesp _ _ _ _        @nav-left @nav-down @nav-up @nav-colon @nav-f12 @nav-space _ _ @nav-dollar @nav-at
+)
+

@@ -1,5 +1,5 @@
 ;; =========================================================
-;; Kanata PRODUCTION config
+;; Kanata PRODUCTION config mouse action included but no error no working
 ;; =========================================================
 
 (defcfg
@@ -55,11 +55,8 @@
   ;; types a normal comma. layer-toggle means it STAYS ON until you
   ;; double-tap "," again (unlike capslock, which is hold-only).
   ;; ===================================================================
-  mouse-toggle (layer-switch mouse)
-  comma-td    (tap-dance 350 (, @mouse-toggle))
-  ;; While already inside mouse mode, a single tap of "," exits straight
-  ;; back to base -- no double-tap needed to leave.
-  mouse-exit  (layer-switch base)
+  mouse-toggle (layer-toggle mouse)
+  comma-td    (tap-dance 200 (, @mouse-toggle))
 
   ;; Cursor movement: accelerates the longer you hold (starts slow,
   ;; speeds up). Params: (interval-ms, ramp-up-ms, min-speed, max-speed).
@@ -105,5 +102,5 @@
 ;; to base layer, so normal typing still works while mouse-mode is on.
 ;; -----------------------------------------------------------------
 (deflayer mouse
-  _ @ms-mid @ms-right @ms-left _ _ _ _ _ _ _ _ _ @ms-scroll-left @ms-scroll-down @ms-scroll-up _ _ _ _ _ _ _ @mouse-exit @ms-cursor-up @ms-cursor-down @ms-cursor-left @ms-cursor-right pgup pgdn
+  _ @ms-mid @ms-right @ms-left _ _ _ _ _ _ _ _ _ @ms-scroll-left @ms-scroll-down @ms-scroll-up _ _ _ _ _ _ _ _ @ms-cursor-up @ms-cursor-down @ms-cursor-left @ms-cursor-right pgup pgdn
 )
