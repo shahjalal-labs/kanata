@@ -1,0 +1,116 @@
+;;new3 =========================================================
+;; Kanata PRODUCTION config
+;; =========================================================
+
+(defcfg
+  process-unmapped-keys yes
+  danger-enable-cmd yes
+)
+
+(defsrc
+  a    s    d    f    l    spc  lsft f3   ;    n    ret  .    caps h    j    k    u    p    m    rsft lctl i    o    ,    8    2    4    6    e    w    g
+)
+
+;; No virtual keys needed -- dynamic-macro-record's built-in toggle
+;; handles start/stop natively.
+
+(defalias
+  a-th    (tap-hold-press 200 200 a    lctl)
+  s-th    (tap-hold-press 200 200 s    lmet)
+  d-th    (tap-hold-press 200 200 d    lsft)
+  f-th    (tap-hold-press 200 200 f    lalt)
+  l-th    (tap-hold-press 200 200 l    lsft)
+  spc-th  (tap-hold-press 200 200 spc  lalt)
+  n-th    (tap-hold-press 200 200 ret  lmet)
+
+  ;; ---- Macro record (Caps+n) / stop (Caps+Enter) -- two separate,
+  ;; unambiguous triggers instead of one "smart" toggle key. Each
+  ;; fires exactly once with clear, correct notification text, and
+  ;; needs no custom state-tracking at all.
+  macro-start (multi (dynamic-macro-record 0) (cmd "notify-send" "Kanata" "Macro recording STARTED"))
+  macro-stop  (multi dynamic-macro-record-stop (cmd "notify-send" "Kanata" "Macro recording STOPPED"))
+
+  ;; Play back the recorded macro
+  dp0 (dynamic-macro-play 0)
+
+  ;; ---- Number mode (defined early since rsft-th below references it) ----
+  number-toggle (layer-switch numbermode)
+  number-exit   (layer-switch base)
+
+  rsft-th (tap-hold-press 200 200 f4 @number-toggle)
+  semi-th (tap-hold-press 200 200 f3   lctl)
+  lctl-th (tap-hold-press 200 200 f8   lctl)
+
+  ;; ---- Capslock / Hyper ----
+  ;; Now holds ALL FOUR modifiers (Ctrl+Shift+Alt+Super = "Hyper"),
+  ;; instead of just Ctrl. Any key you press while caps is held that
+  ;; is NOT explicitly overridden below now sends Hyper+<key>, instead
+  ;; of the old Ctrl+<key>.
+  capsmod (multi lctl lsft lalt lmet (layer-while-held capsnav))
+  caps-th (tap-hold-press 200 200 esc @capsmod)
+
+  ;; ---- Capslock nav-layer overrides: UNCHANGED behavior/output ----
+  ;; unmod releases ALL currently-held mods by default, so these four
+  ;; keep working exactly as before with zero changes needed.
+  nav-left    (unmod left)
+  nav-down    (unmod down)
+  nav-up      (unmod up)
+  nav-right   (unmod rght)
+  nav-f12     (unmod f12)
+  nav-space   (unmod spc)
+
+  ;; These three previously only released Ctrl (since only Ctrl was
+  ;; held). Now that Hyper holds 4 mods, they release ctrl+alt+super
+  ;; but deliberately KEEP shift held (since we want a shifted
+  ;; character anyway) -- output stays exactly : $ @ as before.
+  nav-colon   (multi (release-key lctl) (release-key lalt) (release-key lmet) S-;)
+  nav-dollar  (multi (release-key lctl) (release-key lalt) (release-key lmet) S-4)
+  nav-at      (multi (release-key lctl) (release-key lalt) (release-key lmet) S-2)
+
+  ;; Pinned to exactly Ctrl+Shift+V regardless of Hyper: release
+  ;; alt+super, leave ctrl+shift (already held by Hyper) untouched,
+  ;; then tap v.
+  nav-pastesp (multi (release-key lalt) (release-key lmet) v)
+
+  mouse-toggle (layer-switch mouse)
+  comma-td    (tap-dance 350 (, @mouse-toggle))
+  mouse-exit  (layer-switch base)
+
+  ms-cursor-up    (movemouse-accel-up    10 500 2 40)
+  ms-cursor-down  (movemouse-accel-down  10 500 2 40)
+  ms-cursor-left  (movemouse-accel-left  10 500 2 40)
+  ms-cursor-right (movemouse-accel-right 10 500 2 40)
+
+  ms-scroll-up    (mwheel-up    20 120)
+  ms-scroll-down  (mwheel-down  20 120)
+  ms-scroll-left  (mwheel-left  20 120)
+  ms-scroll-right (mwheel-right 20 120)
+
+  ms-left  (tap-hold-press 200 200 mltp mlft)
+  ms-right (tap-hold-press 200 200 mrtp mrgt)
+  ms-mid   (tap-hold-press 200 200 mmtp mmid)
+
+  ;; tap = digit, hold = real Shift
+  d-num-th (tap-hold-press 200 200 3 lsft)
+  l-num-th (tap-hold-press 200 200 7 lsft)
+)
+
+;; a s d f l spc lsft f3 ; n ret . caps h j k u p m rsft lctl i o , 8 2 4 6 e w g
+(deflayer base
+  @a-th @s-th @d-th @f-th @l-th @spc-th bspc ; @semi-th @n-th . n @caps-th h j k u p m @rsft-th @lctl-th i o @comma-td 8 2 4 6 e w g
+)
+
+;; a          s          d          f          l             spc          lsft         f3           ;              n          ret          .          caps       h            j            k          u            p          m            rsft       lctl       i            o          ,          8          2          4          6          e          w          g
+(deflayer capsnav
+  _ _ _ _ @nav-right _ _ _ @nav-pastesp @macro-start @macro-stop _ _ @nav-left @nav-down @nav-up @nav-colon @nav-f12 @nav-space _ _ @nav-dollar @nav-at _ _ _ _ _ _ _ @dp0
+)
+
+;; deflayer: mouse -- explicit mirrors instead of "_" (layer-switch trap)
+(deflayer mouse
+  @a-th   @ms-mid  @ms-right @ms-left @ms-cursor-right  @spc-th bspc  ; @semi-th  @n-th   .   n   @caps-th  @ms-cursor-left  @ms-cursor-down  @ms-cursor-up  @ms-scroll-up  @ms-scroll-right m @rsft-th @lctl-th @ms-scroll-down  @ms-scroll-left @mouse-exit 8 2 4 6 e    w    g
+)
+
+;; deflayer: numbermode -- explicit mirrors instead of "_" (layer-switch trap)
+(deflayer numbermode
+  1  2  @d-num-th  4  @l-num-th  @spc-th bspc  ; 8  @n-th   .   n   @caps-th  left 5  6  up   0  m @number-exit @lctl-th down 9  @comma-td   8 2 4 6 e w right
+)
