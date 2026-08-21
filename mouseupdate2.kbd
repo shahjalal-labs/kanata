@@ -1,0 +1,83 @@
+;; =========================================================
+;; Kanata PRODUCTION config
+;; =========================================================
+
+(defcfg
+  process-unmapped-keys yes
+)
+
+(defsrc
+  a    s    d    f    l    spc  lsft f3   ;    n    ret  .    caps h    j    k    u    p    m    rsft lctl i    o    ,    8    2    4    6    e    w
+)
+
+(defalias
+  a-th    (tap-hold-press 200 200 a    lctl)
+  s-th    (tap-hold-press 200 200 s    lmet)
+  d-th    (tap-hold-press 200 200 d    lsft)
+  f-th    (tap-hold-press 200 200 f    lalt)
+  l-th    (tap-hold-press 200 200 l    lsft)
+  spc-th  (tap-hold-press 200 200 spc  lalt)
+  n-th    (tap-hold-press 200 200 ret  lmet)
+
+  lsft-th (tap-hold-press 200 200 f4   lsft)
+  rsft-th (tap-hold-press 200 200 bspc rsft)
+  semi-th (tap-hold-press 200 200 f3   lctl)
+  lctl-th (tap-hold-press 200 200 f8   lctl)
+
+  capsmod (multi lctl (layer-while-held capsnav))
+  caps-th (tap-hold-press 200 200 esc @capsmod)
+
+  nav-left    (unmod left)
+  nav-down    (unmod down)
+  nav-up      (unmod up)
+  nav-right   (unmod rght)
+  nav-f12     (unmod f12)
+  nav-space   (unmod spc)
+  nav-colon   (multi (release-key lctl) S-;)
+  nav-dollar  (multi (release-key lctl) S-4)
+  nav-at      (multi (release-key lctl) S-2)
+  nav-pastesp S-v
+
+  mouse-toggle (layer-switch mouse)
+  comma-td    (tap-dance 350 (, @mouse-toggle))
+  mouse-exit  (layer-switch base)
+
+  ms-cursor-up    (movemouse-accel-up    10 500 2 40)
+  ms-cursor-down  (movemouse-accel-down  10 500 2 40)
+  ms-cursor-left  (movemouse-accel-left  10 500 2 40)
+  ms-cursor-right (movemouse-accel-right 10 500 2 40)
+
+  ms-scroll-up    (mwheel-up    20 120)
+  ms-scroll-down  (mwheel-down  20 120)
+  ms-scroll-left  (mwheel-left  20 120)
+  ms-scroll-right (mwheel-right 20 120)
+
+  ms-left  (tap-hold-press 200 200 mltp mlft)
+  ms-right (tap-hold-press 200 200 mrtp mrgt)
+  ms-mid   (tap-hold-press 200 200 mmtp mmid)
+)
+
+;; a s d f l spc lsft f3 ; n ret . caps h j k u p m rsft lctl i o , 8 2 4 6 e w
+(deflayer base
+  @a-th @s-th @d-th @f-th @l-th @spc-th @lsft-th ; @semi-th @n-th . n @caps-th h j k u p m @rsft-th @lctl-th i o @comma-td 8 2 4 6 e w
+)
+
+(deflayer capsnav
+  _ _ _ _ @nav-right _ _ _ @nav-pastesp _ _ _ _ @nav-left @nav-down @nav-up @nav-colon @nav-f12 @nav-space _ _ @nav-dollar @nav-at _ _ _ _ _ _ _
+)
+
+;; -----------------------------------------------------------------
+;; deflayer: mouse
+;; IMPORTANT: since this is reached via layer-switch (not
+;; layer-while-held), "mouse" BECOMES the new active base layer.
+;; A transparent "_" here has NO layer below it to fall through to,
+;; so it would silently do nothing. Every key that should behave
+;; normally is therefore written explicitly (matching base layer),
+;; instead of relying on "_".
+;; Only s/d/f/l (clicks + cursor-right) are intentionally different,
+;; since you repurposed those specifically for mouse mode.
+;; -----------------------------------------------------------------
+;; a       s        d         f        l                 spc     lsft     f3 ;        n       ret .   caps     h                j                k              u              p                m rsft     lctl     i                o               ,           8 2 4 6 e    w
+(deflayer mouse
+  @a-th   @ms-mid  @ms-right @ms-left @ms-cursor-right  @spc-th @lsft-th  ; @semi-th  @n-th   .   n   @caps-th  @ms-cursor-left  @ms-cursor-down  @ms-cursor-up  @ms-scroll-up  @ms-scroll-right m @rsft-th @lctl-th @ms-scroll-down  @ms-scroll-left @mouse-exit 8 2 4 6 pgup pgdn
+)

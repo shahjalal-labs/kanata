@@ -1,0 +1,87 @@
+;; =========================================================
+;; Kanata PRODUCTION config
+;; =========================================================
+
+(defcfg
+  process-unmapped-keys yes
+)
+
+(defsrc
+  a    s    d    f    l    spc  lsft f3   ;    n    ret  .    caps h    j    k    u    p    m    rsft lctl i    o    ,    8    2    4    6    e    w    g
+)
+
+(defalias
+  a-th    (tap-hold-press 200 200 a    lctl)
+  s-th    (tap-hold-press 200 200 s    lmet)
+  d-th    (tap-hold-press 200 200 d    lsft)
+  f-th    (tap-hold-press 200 200 f    lalt)
+  l-th    (tap-hold-press 200 200 l    lsft)
+  spc-th  (tap-hold-press 200 200 spc  lalt)
+  n-th    (tap-hold-press 200 200 ret  lmet)
+
+  ;; ---- Number mode (defined early since rsft-th below references it) ----
+  number-toggle (layer-switch numbermode)
+  number-exit   (layer-switch base)
+
+  rsft-th (tap-hold-press 200 200 @number-toggle f4)
+  semi-th (tap-hold-press 200 200 f3   lctl)
+  lctl-th (tap-hold-press 200 200 f8   lctl)
+
+  capsmod (multi lctl (layer-while-held capsnav))
+  caps-th (tap-hold-press 200 200 esc @capsmod)
+
+  nav-left    (unmod left)
+  nav-down    (unmod down)
+  nav-up      (unmod up)
+  nav-right   (unmod rght)
+  nav-f12     (unmod f12)
+  nav-space   (unmod spc)
+  nav-colon   (multi (release-key lctl) S-;)
+  nav-dollar  (multi (release-key lctl) S-4)
+  nav-at      (multi (release-key lctl) S-2)
+  nav-pastesp S-v
+
+  mouse-toggle (layer-switch mouse)
+  comma-td    (tap-dance 350 (, @mouse-toggle))
+  mouse-exit  (layer-switch base)
+
+  ms-cursor-up    (movemouse-accel-up    10 500 2 40)
+  ms-cursor-down  (movemouse-accel-down  10 500 2 40)
+  ms-cursor-left  (movemouse-accel-left  10 500 2 40)
+  ms-cursor-right (movemouse-accel-right 10 500 2 40)
+
+  ms-scroll-up    (mwheel-up    20 120)
+  ms-scroll-down  (mwheel-down  20 120)
+  ms-scroll-left  (mwheel-left  20 120)
+  ms-scroll-right (mwheel-right 20 120)
+
+  ms-left  (tap-hold-press 200 200 mltp mlft)
+  ms-right (tap-hold-press 200 200 mrtp mrgt)
+  ms-mid   (tap-hold-press 200 200 mmtp mmid)
+
+  ;; tap = digit, hold = real Shift (combine with another number-mode
+  ;; key for symbols, e.g. hold d + tap f = Shift+4 = $)
+  d-num-th (tap-hold-press 200 200 3 lsft)
+  l-num-th (tap-hold-press 200 200 7 lsft)
+)
+
+;; a s d f l spc lsft f3 ; n ret . caps h j k u p m rsft lctl i o , 8 2 4 6 e w g
+(deflayer base
+  @a-th @s-th @d-th @f-th @l-th @spc-th bspc ; @semi-th @n-th . n @caps-th h j k u p m @rsft-th @lctl-th i o @comma-td 8 2 4 6 e w g
+)
+
+(deflayer capsnav
+  _ _ _ _ @nav-right _ _ _ @nav-pastesp _ _ _ _ @nav-left @nav-down @nav-up @nav-colon @nav-f12 @nav-space _ _ @nav-dollar @nav-at _ _ _ _ _ _ _ _
+)
+
+;; deflayer: mouse -- explicit mirrors instead of "_" (layer-switch trap)
+;; a       s        d         f        l                 spc     lsft  f3 ;        n       ret .   caps     h                j                k              u              p                m rsft     lctl     i                o               ,           8 2 4 6 e    w    g
+(deflayer mouse
+  @a-th   @ms-mid  @ms-right @ms-left @ms-cursor-right  @spc-th bspc  ; @semi-th  @n-th   .   n   @caps-th  @ms-cursor-left  @ms-cursor-down  @ms-cursor-up  @ms-scroll-up  @ms-scroll-right m @rsft-th @lctl-th @ms-scroll-down  @ms-scroll-left @mouse-exit 8 2 4 6 e    w    g
+)
+
+;; deflayer: numbermode -- explicit mirrors instead of "_" (layer-switch trap)
+;; a  s  d          f  l          spc     lsft  f3 ;  n       ret .   caps     h    j  k  u    p  m rsft         lctl     i    o  ,           8 2 4 6 e w g
+(deflayer numbermode
+  1  2  @d-num-th  4  @l-num-th  @spc-th bspc  ; 8  @n-th   .   n   @caps-th  left 5  6  up   0  m @number-exit @lctl-th down 9  @comma-td   8 2 4 6 e w right
+)
